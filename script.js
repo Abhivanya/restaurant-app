@@ -1,80 +1,87 @@
-const expences = document.querySelector(".expences");
-const expences_form = document.querySelector("form");
+const expences_form = document.querySelector("#expences_form");
+const table1 = document.querySelector(".table1");
+const table2 = document.querySelector(".table2");
+const table3 = document.querySelector(".table3");
 
-expences_form.addEventListener("submit", function (e) {
+expences_form.addEventListener("submit", async function (e) {
   e.preventDefault();
 
-  const expense_amount = document.getElementById("expense_amount").value;
-  const expence_desc = document.getElementById("expence_desc").value;
-  const expence_category = document.getElementById("expence_category").value;
+  const orderPrice = document.getElementById("price").value;
+  const orderTable = document.getElementById("selectedTable").value;
+  const orderDish = document.getElementById("dish").value;
 
-  if (
-    !expense_amount ||
-    !expence_desc ||
-    !expence_category ||
-    expence_category === "Select Category"
-  ) {
+  if (!orderPrice || !orderTable || !orderDish) {
     alert("Please fill in all fields with valid values!");
     return;
   }
 
-  const newExpence = {
-    amount: expense_amount,
-    description: expence_desc,
-    category: expence_category,
+  const newOrder = {
+    price: orderPrice,
+    item: orderDish,
+    tableNo: orderTable,
   };
 
-  const editKey = expences_form.getAttribute("edit-key");
-  if (editKey) {
-    localStorage.setItem(editKey, JSON.stringify(newExpence));
-    expences_form.removeAttribute("edit-key");
-  } else {
-    const uniqueKey = `key_${Date.now()}`;
-    localStorage.setItem(uniqueKey, JSON.stringify(newExpence));
-  }
+  axios
+    .post(
+      "https://crudcrud.com/api/6ebf4939f525482a823a02102848c7d4/order",
+      newOrder
+    )
+    .then((res) => {
+      console.log(res.data);
+      getData();
+    })
+    .catch((err) => console.log(err.message));
 
   expences_form.reset();
-
-  loadList();
 });
 
-function loadList() {
-  expences.innerHTML = "";
+function getData() {
+  axios
+    .get("https://crudcrud.com/api/6ebf4939f525482a823a02102848c7d4/order")
+    .then((res) => {
+      const data = res.data;
+      console.log(res.data);
+      displayData(1, data);
+      displayData(2, data);
+      displayData(3, data);
+    })
+    .catch((err) => console.log(err));
+}
 
-  if (localStorage.length === 0) {
-    console.log("No data in localStorage!");
-    return;
-  }
+function displayData(tableNumber, data) {
+  const filteredData = data.filter(
+    (item) => parseInt(item.tableNo) === tableNumber
+  );
+  const tableClass = `.table${tableNumber}`;
+  const listContainer = document.querySelector(tableClass);
 
-  for (let i = 0; i < localStorage.length; i++) {
-    const key = localStorage.key(i);
-    const value = JSON.parse(localStorage.getItem(key));
+  listContainer.innerHTML = "";
+  listContainer.innerHTML;
 
-    expences.innerHTML += `
-      <li class="expence ">
-        <div class="desc">${value.description || "No Description"}</div>
-        <div class="amount">${value.amount || 0} Rs</div>
-        <div class="cat">${value.category || "Uncategorized"}</div>
-        <button class="btn btn-secondary btn-sm mr-2" onclick="handleEdit('${key}')">Edit</button>
-        <button class="btn btn-danger btn-sm" onclick="handleDelete('${key}')">Delete</button>
-      </li>
+  filteredData.forEach((order) => {
+    const listItem = document.createElement("li");
+    listItem.classList.add("order");
+
+    const orderHTML = `
+        <div>${order.price} Rs</div>
+        <div>${order.item}</div>
+        <div><button class="btn-danger btn" onclick="deleteOrder('${order._id}', ${tableNumber})">Delete</button></div>
     `;
-  }
+    listItem.innerHTML = orderHTML;
+    listContainer.appendChild(listItem);
+  });
 }
 
-function handleDelete(key) {
-  localStorage.removeItem(key);
-  loadList();
+function deleteOrder(orderId, tableNumber) {
+  axios
+    .delete(
+      `https://crudcrud.com/api/6ebf4939f525482a823a02102848c7d4/order/${orderId}`
+    )
+    .then((res) => {
+      console.log(`Order deleted: ${orderId}`);
+      getData();
+    })
+    .catch((err) => console.log(err));
 }
 
-function handleEdit(key) {
-  const expenceToEdit = JSON.parse(localStorage.getItem(key));
-  document.getElementById("expense_amount").value = expenceToEdit.amount;
-  document.getElementById("expence_desc").value = expenceToEdit.description;
-  document.getElementById("expence_category").value = expenceToEdit.category;
-  expences_form.setAttribute("edit-key", key);
-}
-
-document.addEventListener("DOMContentLoaded", loadList);
-
-window.addEventListener("storage", loadList);
+document.addEventListener("DOMContentLoaded", getData);
