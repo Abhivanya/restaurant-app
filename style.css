@@ -1,0 +1,62 @@
+* {
+    margin: 0;
+    padding: 0;
+    color: white;
+}
+
+
+.heading {
+    text-align: center;
+    margin: 30px auto;
+}
+
+.form-container {
+    width: full;
+}
+
+label {
+    font-size: 25px;
+    padding: 0 10px;
+    text-align: center;
+    justify-items: center;
+}
+
+form {
+    height: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+option {
+    color: black;
+}
+
+ul {
+    margin-top: 30px;
+    list-style: none;
+    background: wheat;
+}
+
+.addBtn {
+    margin-top: 15px;
+    margin-bottom: 15px;
+}
+
+.expences {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    background: #b766a2;
+    border-radius: 5px;
+    min-height: 500px;
+}
+
+.expence {
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
+    width: 100%;
+    border-bottom: 2px solid white;
+}
